@@ -1,4 +1,5 @@
-# Developed by H. Hall & N. Meeprom (https://orcid.org/0000-0003-4193-7062)
+# Developed by N. Meeprom (https://orcid.org/0000-0003-4193-7062) and H. Hall 
+# designed to use standard HybPiper stats output as input
 
 library(tidyverse)
 library(ggplot2)
