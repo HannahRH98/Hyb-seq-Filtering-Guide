@@ -1,7 +1,7 @@
 # Developed by N. Meeprom (https://orcid.org/0000-0003-4193-7062) and H. Hall 
 # designed to use standard HybPiper stats output as input
 # this should only be used as a guide to choosing the best filtering strategy 
-# the decision to remove genes may also depend on your beliefs regarding missing data etc
+# the decision to remove genes may also depend on your beliefs regarding missing data etc and your views on more data or more samples.
 
 library(tidyverse)
 library(ggplot2)
