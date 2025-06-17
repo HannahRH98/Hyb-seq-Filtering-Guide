@@ -1,118 +1,82 @@
-# Developed by N. Meeprom (https://orcid.org/0000-0003-4193-7062) and H. Hall 
-# designed to use standard HybPiper stats output as input
-# this should only be used as a guide to choosing the best filtering strategy 
-# the decision to remove genes may also depend on your beliefs regarding missing data etc and your views on more data or more samples.
-
 library(tidyverse)
 library(ggplot2)
+library(ggrepel)
 library(cowplot)
 
 
-# this requires the "seq_lengths.tsv" output from the hybpiper_stats command.
-
+# Load data
 seq_lengths <- read.table("seq_lengths.tsv", sep = "\t", header = TRUE)
 
-# Make sure that the first column and row that contain our sequence length values are correct
 
-seq_lengths[2,2]
-
-# Count seqeunces with 0 bp for each gene (empty sequence)
-
-num.rows <- nrow(seq_lengths)
-num.cols <- ncol(seq_lengths)
-
-# designate the first column that contain sequence lengths (usually 2, but depending on your table format)
-from <- 2
-
-count.empty <- data.frame(colnames(seq_lengths[2:num.cols]))
-zero <- data.frame()
-
-for (x in from:num.cols){
-  zero[x, 1] <- sum(seq_lengths[2:num.rows, x] == 0)
-}
-
-count.empty[,2] <- data.frame(zero[2:num.cols,1])
-count.empty[,3] <- zero[2:num.cols,1]*100/(num.rows-1)
-
-colnames(count.empty) <- c("Gene", "Empty", "PercentEmpty")
-
-View(count.empty)
-
-# Plot a histogram showing how many empty sequences are found in each gene
-
-ggplot(data = count.empty) + geom_histogram(aes(x = Empty), bins = 50)
-
-# Or plot a line graph to see it more clearly
-
-ggplot(data = count.empty) + 
-  geom_bar(aes(x = reorder(Gene, -Empty), y = PercentEmpty), stat = "identity") +
-  theme(axis.text.x = element_blank()) +
-  scale_y_continuous(expand = c(0,0)) +
-  labs(x = "Genes", y = "Percent of Empty Sequences")
-
-## Print genes that contain certain amount/percentage of empty sequences
-## Look into the plots above and count.empty file to see if there is any clear-cut percentage of empty genes
-
-threshold.zero <- set to what ever threshold i.e. 50, 70, 80
-
-empty_select <- filter(count.empty, PercentEmpty >= threshold.zero)
-
-print(empty_select[1], row.names = FALSE)
-
-sink("gene_empty_75.txt")
-print(empty_select[1], row.names = FALSE)
-sink()
+#check number of total genes present. For Angiosperms353 this should be 353.
+cat("Number of genes detected:", ncol(seq_lengths) - (start_col - 1), "\n")
 
 
-# Then, open the output text file and manually remove spaces. This file is now ready to be used as a genelist file to remove undesired genes from the dataset before running trees or can run trees for all of them and remove these gene trees later.
+start_col <- 2
+num_samples <- nrow(seq_lengths) - 1  # exclude header row (assuming first row is header)
 
-## Now, see how many genes would are there if we set a criteria of how much empty sequence we would accept for those genes
+# Calculate % Empty, % Present, and counts of present/absent per gene
+percent_data <- seq_lengths[-1, start_col:ncol(seq_lengths)] %>%
+  summarise(across(everything(), list(
+    Empty = ~mean(. == 0) * 100,
+    Present = ~mean(. > 0) * 100,
+    PresentCount = ~sum(. > 0),
+    AbsentCount = ~sum(. == 0)
+  ))) %>%
+  pivot_longer(everything(),
+               names_to = c("Gene", ".value"),
+               names_sep = "_") %>%
+  arrange(Present)  # sort by Present ascending (low to high)
 
-sum(count.empty[1:nrow(count.empty), 2] >= threshold.zero)
+# Reorder columns so counts follow percentages side-by-side and rename columns
+percent_data <- percent_data %>%
+  select(Gene, Empty, AbsentCount, Present, PresentCount) %>%
+  rename(
+    `Empty (%)` = Empty,
+    `Absent Count` = AbsentCount,
+    `Present (%)` = Present,
+    `Present Count` = PresentCount
+  )
 
-accept <- data.frame()
+# Save combined summary file with counts and percentages
+write.table(percent_data, file = "gene_missing_present_summary.tsv",
+            sep = "\t", row.names = FALSE, quote = FALSE)
 
-# 353 refers to Angiosperms353 targets, this number can change depending on what bait kit you use. 
+# Based upon the values generated in the "gene_missing_present_summary.tsv", a threshold can be decided 
+# tested, and visualised in the histogram.
+# User sets threshold here (minimum percent present required)
+threshold_present <- 70  # e.g. keep genes with >= 70% present sequences
 
-for (i in 1:353){
-  accept[i ,1] <- i
-  accept[i, 2] <- sum(count.empty[1:nrow(count.empty), 3] >= i)
-}
+# Plot histogram showing distribution of % Present,
+# coloring genes below threshold in red and others in blue
+ggplot(percent_data, aes(x = `Present (%)`, fill = `Present (%)` < threshold_present)) +
+  geom_histogram(bins = 30, color = "black") +
+  scale_fill_manual(values = c("FALSE" = "steelblue", "TRUE" = "firebrick")) +
+  geom_vline(xintercept = threshold_present, color = "red", linetype = "dashed") +
+  labs(title = "Distribution of % Present Data per Gene",
+       subtitle = paste("Genes with <", threshold_present, "% present shown in red"),
+       x = "% Present per Gene",
+       y = "Number of Genes",
+       fill = "Below Threshold") +
+  theme_minimal()
 
-colnames(accept) <- c("ThreholdEmptyAccepted", "GenesToRemove")
+# Determine genes to remove and keep based on threshold
+genes_to_remove <- percent_data %>% filter(`Present (%)` < threshold_present)
+genes_to_keep <- percent_data %>% filter(`Present (%)` >= threshold_present)
 
-head(accept)
+# Summary output
+cat("Filtering threshold (min % present required):", threshold_present, "%\n")
+cat("Total genes:", nrow(percent_data), "\n")
+cat("Genes to REMOVE:", nrow(genes_to_remove), "\n")
+cat("Genes to KEEP:", nrow(genes_to_keep), "\n\n")
 
-ggplot(data = accept) +
-  geom_line(aes(x = ThreholdEmptyAccepted, y = GenesToRemove))
+cat("Genes to REMOVE:\n")
+print(genes_to_remove$Gene)
 
-# histogram for frequency of genes to remove over the thresholds
+cat("\nGenes to KEEP:\n")
+print(genes_to_keep$Gene)
 
-ggplot(data = accept) + geom_histogram(aes(x = GenesToRemove), bins = 100)
-
-
-## Count NOT EMPTY
-
-num.rows <- nrow(seq_lengths)
-num.cols <- ncol(seq_lengths)
-
-count.present <- data.frame(colnames(seq_lengths[2:num.cols]))
-present <- data.frame()
-
-for (x in from:num.cols){
-  present[x, 1] <- sum(seq_lengths[2:num.rows, x] > 0)
-}
-
-count.present[,2] <- data.frame(present[2:num.cols,1])
-count.present[,3] <- present[2:num.cols,1]*100/(num.rows-1)
-
-colnames(count.present) <- c("Gene", "Presnt", "PercentPresent")
-
-count.present
-
-# save output
-
-write.table(count.present, file = "count_present.tsv", sep = "\t", row.names = FALSE, quote = FALSE)
-
-
-
+# Save gene lists for downstream use if desired. These can be used as a genelist file remove undesired 
+# genes from the dataset before running trees or can run trees for all of them and remove these gene trees later.
+write.table(genes_to_remove$Gene, file = "genes_to_remove.txt", quote = FALSE, row.names = FALSE, col.names = FALSE)
+write.table(genes_to_keep$Gene, file = "genes_to_keep.txt", quote = FALSE, row.names = FALSE, col.names = FALSE)
