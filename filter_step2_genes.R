@@ -52,7 +52,7 @@ ggplot(data = count.empty) +
 ## Print genes that contain certain amount/percentage of empty sequences
 ## Look into the plots above and count.empty file to see if there is any clear-cut percentage of empty genes
 
-threshold.zero <-70
+threshold.zero <- set to what ever threshold i.e. 50, 70, 80
 
 empty_select <- filter(count.empty, PercentEmpty >= threshold.zero)
 
@@ -70,6 +70,8 @@ sink()
 sum(count.empty[1:nrow(count.empty), 2] >= threshold.zero)
 
 accept <- data.frame()
+
+# 353 refers to Angiosperms353 targets, this number can change depending on what bait kit you use. 
 
 for (i in 1:353){
   accept[i ,1] <- i
