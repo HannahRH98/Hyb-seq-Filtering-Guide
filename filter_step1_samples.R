@@ -1,5 +1,7 @@
 # Developed by N. Meeprom (https://orcid.org/0000-0003-4193-7062) and H. Hall 
 # designed to use standard HybPiper stats output as input
+# this should only be used as a guide to choosing the best filtering strategy 
+# the decision to remove samples may also depend on the importance of that sample not just the number of genes recovered
 
 library(tidyverse)
 library(ggplot2)
