@@ -7,7 +7,9 @@ library(cowplot)
 
 citation("ape")
 
-seq_lengths <- read.table("seq_lengths_genes_manual.tsv", sep = "\t", header = TRUE)
+# this requires the "seq_lengths.tsv" output from the hybpiper_stats command.
+
+seq_lengths <- read.table("seq_lengths.tsv", sep = "\t", header = TRUE)
 
 # Make sure that the first column and row that contain our sequence length values are correct
 
@@ -50,7 +52,7 @@ ggplot(data = count.empty) +
 ## Print genes that contain certain amount/percentage of empty sequences
 ## Look into the plots above and count.empty file to see if there is any clear-cut percentage of empty genes
 
-threshold.zero <-80
+threshold.zero <-70
 
 empty_select <- filter(count.empty, PercentEmpty >= threshold.zero)
 
@@ -104,3 +106,10 @@ count.present[,3] <- present[2:num.cols,1]*100/(num.rows-1)
 colnames(count.present) <- c("Gene", "Presnt", "PercentPresent")
 
 count.present
+
+# save output
+
+write.table(count.present, file = "count_present.tsv", sep = "\t", row.names = FALSE, quote = FALSE)
+
+
+
