@@ -1,6 +1,6 @@
-# Script originally developed by N. Meeprom (https://orcid.org/0000-0003-4193-7062) and adapted by H. Hall
-# Purpose: Analyze standard HybPiper stats output to inform filtering strategies
-# Note: This script serves as a guide for selecting filtering thresholds;
+# Originally developed by N. Meeprom (https://orcid.org/0000-0003-4193-7062) and adapted by H. Hall
+# Purpose: AnalySe standard HybPiper stats output to inform filtering strategies
+# Note: This script serves as a guide for selecting gene filtering thresholds;
 # final decisions should consider the biological importance of samples and genes.
 
 
@@ -50,7 +50,8 @@ write.table(percent_data, file = "gene_missing_present_summary.tsv",
             sep = "\t", row.names = FALSE, quote = FALSE)
 
 # Based upon the values generated in the "gene_missing_present_summary.tsv", a threshold can be decided 
-# tested, and visualised in the histogram.
+# tested, and visualised in the histogram. 
+# sometimes there can be a clear cut threshold, but other times, the thresholds may need to be explored
 # User sets threshold here (minimum percent present required)
 threshold_present <- 70  # e.g. keep genes with >= 70% present sequences
 
