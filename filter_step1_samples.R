@@ -9,6 +9,8 @@ library(cowplot)
 
 dataset <- element_text("Genes")
 
+# you will need the "hybpiper_stats.tsv" output from the hybpiper_stats command.
+
 stats <- read.table("hybpiper_stats.tsv", sep = "\t", header = TRUE)
 stats
 
