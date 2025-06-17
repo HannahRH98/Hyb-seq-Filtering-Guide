@@ -1,6 +1,8 @@
-# Original script developed by N. Meeprom (https://orcid.org/0000-0003-4193-7062) but adapted by H. Hall 
-# designed to use standard HybPiper stats output as input
-# this should only be used as a guide to choosing the best filtering strategy 
+# Script originally developed by N. Meeprom (https://orcid.org/0000-0003-4193-7062) and adapted by H. Hall
+# Purpose: Analyze standard HybPiper stats output to inform filtering strategies
+# Note: This script serves as a guide for selecting filtering thresholds;
+# final decisions should consider the biological importance of samples and genes.
+
 
 
 library(tidyverse)
