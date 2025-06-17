@@ -7,7 +7,6 @@ library(tidyverse)
 library(ggplot2)
 library(cowplot)
 
-citation("ape")
 
 # this requires the "seq_lengths.tsv" output from the hybpiper_stats command.
 
