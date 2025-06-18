@@ -15,12 +15,12 @@ library(cowplot)
 seq_lengths <- read.table("seq_lengths.tsv", sep = "\t", header = TRUE)
 
 
-#check number of total genes present. For Angiosperms353 this should be 353.
-cat("Number of genes detected:", ncol(seq_lengths) - (start_col - 1), "\n")
-
 
 start_col <- 2
 num_samples <- nrow(seq_lengths) - 1  # exclude header row (assuming first row is header)
+
+# check number of total genes present. For Angiosperms353 this should be 353.
+cat("Number of genes detected:", ncol(seq_lengths) - (start_col - 1), "\n")
 
 # Calculate % Empty, % Present, and counts of present/absent per gene
 percent_data <- seq_lengths[-1, start_col:ncol(seq_lengths)] %>%
