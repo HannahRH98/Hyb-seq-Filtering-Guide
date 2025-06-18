@@ -1,10 +1,10 @@
 # Original script developed by N. Meeprom (https://orcid.org/0000-0003-4193-7062) but further tidied by H. Hall
 # This script is designed to analyse HybPiper output statistics ("hybpiper_stats.tsv")
-# and assist in deciding filtering strategies based on gene recovery across samples.
+# and assist in deciding filtering strategies based on gene length recovery across samples.
 #
 # It provides visualisations and numerical summaries showing how many samples
-# meet certain gene recovery thresholds (25%, 50%, 75% of gene length recovered).
-# Users can explore sample retention across a range of gene recovery cutoffs.
+# meet certain gene length recovery thresholds (25%, 50%, 75% - standard hypiper_stats output).
+# Users can explore sample retention across a range of gene length recovery cutoffs.
 #
 # This should be used as a guide: removal decisions should also consider sample importance,
 # not only gene recovery counts.
@@ -17,21 +17,21 @@ library(cowplot)
 dataset <- element_text("Genes")
 
 # Load HybPiper stats file output; this file should contain per-sample gene recovery stats
-stats <- read.table("hybpiper_stats.tsv", sep = "\t", header = TRUE)
+stats <- read.table("duplicates_removed_hybpiper_stat.tsv", sep = "\t", header = TRUE)
 
 # Display first few rows to verify data loaded correctly
 head(stats)
 
-## Calculate average number of genes recovered at different thresholds across all samples
+## Calculate average number of genes recovered at different length recovery thresholds across all samples
 gene_recovery_summary <- summarise(stats,
                                    mean_25 = mean(GenesAt25pct),
                                    mean_50 = mean(GenesAt50pct),
                                    mean_75 = mean(GenesAt75pct))
 
-print("Average genes recovered per sample at different thresholds:")
+print("Average genes recovered per sample at different sequence recovery thresholds:")
 print(gene_recovery_summary)
 
-## Define the range of loci thresholds to examine
+## Define the range of loci thresholds to examine visually
 # This is set to 0-353 for Angiosperms353 bait kit by default; modify if different kit used
 genes <- 0:353
 
@@ -39,17 +39,17 @@ genes <- 0:353
 outputs <- data.frame()
 
 # Loop over each gene recovery cutoff threshold to calculate how many samples meet that threshold
-for (i in seq_along(genes)) {
-  count_25 <- sum(stats$GenesAt25pct >= genes[i])
-  count_50 <- sum(stats$GenesAt50pct >= genes[i])
-  count_75 <- sum(stats$GenesAt75pct >= genes[i])
-  
-  outputs[i, ] <- c(genes[i],
-                    genes[i] * 100 / length(genes),  # Percent of loci threshold
-                    count_25,
-                    count_50,
-                    count_75)
+for (i in 1:length(genes)){
+  count1 <- sum(stats$GenesAt25pct >= genes[i])
+  count2 <- sum(stats$GenesAt50pct >= genes[i])
+  count3 <- sum(stats$GenesAt75pct >= genes[i])
+  outputs[i,1] <- genes[i]
+  outputs[i,2] <- (genes[i] * 100/length(genes))
+  outputs[i,3] <- count1
+  outputs[i,4] <- count2
+  outputs[i,5] <- count3
 }
+
 
 colnames(outputs) <- c("Loci", "PercentLoci", "SamplesAt25pct", "SamplesAt50pct", "SamplesAt75pct")
 
@@ -66,16 +66,22 @@ outputs_longer <- pivot_longer(outputs,
 samples_retained_plot <- ggplot(outputs_longer, aes(x = Loci, y = Samples, color = ThresholdType)) + 
   geom_line(size = 1) + 
   theme_minimal() +
-  labs(title = "Sample Retention Across Loci Recovery Thresholds",
-       subtitle = "Lines show number of samples meeting gene recovery cutoff",
-       x = "Number of Loci Recovered (Gene Threshold)",
+  labs(title = "Sample Retention Across Sequence Recovery Thresholds",
+       subtitle = "Lines show number of samples meeting sequence recovery cutoff",
+       x = "Number of Loci Recovered",
        y = "Number of Samples Retained",
-       color = "Recovery Threshold")
+       color = "Length Recovery Threshold")
 
 print(samples_retained_plot)
 
 # Save plot as PNG
 ggsave("samples_retained_supercontig.png", samples_retained_plot, dpi = 300, width = 8, height = 5)
+
+# You may want to filter based on where the number of recovered loci drops off significantly.
+# Different sequence length recovery thresholds can greatly affect how many loci are recovered per sample.
+# However, if recovery is generally good, there may be little difference between thresholds,
+# and the user can treat them similarly. The key is to balance the trade-off between retaining samples
+# recovering more loci, and obtaining longer sequences.
 
 ## Calculate slopes (rate of change) of sample retention as loci threshold increases
 slope_outputs <- data.frame(Loci = genes, Slope25 = NA, Slope50 = NA, Slope75 = NA)
@@ -92,7 +98,7 @@ slope_outputs_longer <- pivot_longer(slope_outputs,
                                     names_to = "ThresholdType",
                                     values_to = "Slope")
 
-# Plot slope of sample retention change across loci thresholds
+# Plot slope of sample retention change across loci length thresholds
 slope_plot <- ggplot(slope_outputs_longer, aes(x = Loci, y = Slope, color = ThresholdType)) + 
   geom_line(size = 1) +
   theme_minimal() +
