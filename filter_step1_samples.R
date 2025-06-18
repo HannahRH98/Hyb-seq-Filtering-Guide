@@ -1,4 +1,4 @@
-# Original script developed by N. Meeprom (https://orcid.org/0000-0003-4193-7062) but further tidied by H. Hall
+# Original script developed by N. Meeprom (https://orcid.org/0000-0003-4193-7062) but further adapted by H. Hall
 # This script is designed to analyse HybPiper output statistics ("hybpiper_stats.tsv")
 # and assist in deciding filtering strategies based on gene length recovery across samples.
 #
