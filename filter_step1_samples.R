@@ -5,7 +5,7 @@
 # It provides visualisations and numerical summaries showing how many samples
 # meet certain gene length recovery thresholds (25%, 50%, 75% - standard hypiper_stats output).
 # Users can explore sample retention across a range of gene length recovery cutoffs.
-#
+# Can help determine the length threshold of data the user takes onto later downstream analyses.
 # This should be used as a guide: removal decisions should also consider sample importance,
 # not only gene recovery counts.
 
