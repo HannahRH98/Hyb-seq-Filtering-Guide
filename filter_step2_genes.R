@@ -1,6 +1,6 @@
 # Originally developed by N. Meeprom (https://orcid.org/0000-0003-4193-7062) and adapted by H. Hall
 # Purpose: AnalySe standard HybPiper stats output to inform filtering strategies
-# Note: This script serves as a guide for selecting gene filtering thresholds;
+# Note: This script serves as a guide for selecting gene filtering thresholds based on presence and abscence;
 # final decisions should consider the biological importance of samples and genes.
 
 
